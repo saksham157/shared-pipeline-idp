@@ -1,4 +1,4 @@
-def call()
+def call() {
 
 pipeline {
 
@@ -34,4 +34,5 @@ pipeline {
             echo 'shared library pipeline failed'
         }
     }
+}
 }
