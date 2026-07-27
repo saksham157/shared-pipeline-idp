@@ -4,6 +4,8 @@ def call() {
 
         environment {
             SONAR_PROJECT_KEY = 'python-app-code'
+            IMAGE_NAME = 'saksham8000/python-app-code'
+            IMAGE_TAG = "${env.BUILD_NUMBER}"
         }
 
         stages {
@@ -64,11 +66,44 @@ def call() {
                 }
             }
 
+            stage('Docker Build') {
+                steps {
+                    script {
+                        try {
+                            sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} ."
+                        } catch (Exception e) {
+                            error "Docker build failed: ${e.message}"
+                        }
+                    }
+                }
+            }
+
+            stage('Docker Push') {
+                steps {
+                    script {
+                        try {
+                            withCredentials([usernamePassword(
+                                credentialsId: 'dockerhub-creds',
+                                usernameVariable: 'DOCKER_USER',
+                                passwordVariable: 'DOCKER_PASS'
+                            )]) {
+                                sh """
+                                    echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin
+                                    docker push ${IMAGE_NAME}:${IMAGE_TAG}
+                                """
+                            }
+                        } catch (Exception e) {
+                            error "Docker push failed: ${e.message}"
+                        }
+                    }
+                }
+            }
+
         }
 
         post {
             success {
-                echo 'Pipeline completed successfully — code passed quality checks.'
+                echo "Pipeline succeeded — image ${IMAGE_NAME}:${IMAGE_TAG} pushed."
             }
             unstable {
                 echo 'Pipeline finished but some checks were flagged — review logs.'
