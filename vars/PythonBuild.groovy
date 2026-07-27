@@ -40,7 +40,7 @@ def call() {
                     script {
                         try {
                             withSonarQubeEnv('sonarqube-server') {
-                                sh "sonar-scanner -Dsonar.projectKey=${SONAR_PROJECT_KEY}"
+                                sh "/opt/sonar-scanner/bin/sonar-scanner -Dsonar.projectKey=${SONAR_PROJECT_KEY}"
                             }
                         } catch (Exception e) {
                             error "SonarQube scan failed: ${e.message}"
