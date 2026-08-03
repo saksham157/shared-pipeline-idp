@@ -29,15 +29,15 @@ ArgoCD detects change → auto-syncs → deploys to Kubernetes
 The core pipeline stages live in a reusable Jenkins shared library, not
 copy-pasted into every project's Jenkinsfile.
 
-![Shared library pipeline code](./screenshots/01-shared-library-code.png)
+![Shared library pipeline code](./screenshots/Screenshot%202026-08-03%20161559.png)
 
 ## 2. Registering the library in Jenkins
 
 Configured under Manage Jenkins → System → Global Trusted Pipeline
 Libraries, pointing at the `shared-pipeline-idp` repo.
 
-![Jenkins Global Library config](./screenshots/02-global-library-config.png)
-![Library repo URL and credentials](./screenshots/03-library-repo-url.png)
+![Jenkins Global Library config](./screenshots/Screenshot%202026-08-03%20161718.png)
+![Library repo URL and credentials](./screenshots/Screenshot%202026-08-03%20161742.png)
 
 ## 3. App code, tests, and pushing a change
 
@@ -45,7 +45,7 @@ Flask app with a `/health` endpoint and task routes, tested with pytest
 (13 tests, including new coverage for the API layer added on top of the
 original in-memory to-do functions).
 
-![Code, tests, and git push](./screenshots/04-code-and-push.png)
+![Code, tests, and git push](./screenshots/Screenshot%202026-08-03%20162018.png)
 
 ## 4. Pipeline history
 
@@ -58,7 +58,7 @@ original in-memory to-do functions).
 A realistic build history — not every run passed on the first try, and
 that's part of the story (see the issues table below).
 
-![Jenkins build history](./screenshots/05-build-history.png)
+![Jenkins build history](./screenshots/Screenshot%202026-08-03%20162345.png)
 
 ## 5. A fully green pipeline run
 
@@ -66,13 +66,13 @@ All 8 stages passing in one run: Checkout → Install Dependencies →
 Unit Test → SonarQube Scan → Quality Gate → Docker Build → Docker Push →
 Update Helm Values for ArgoCD.
 
-![Full pipeline, all stages green](./screenshots/06-pipeline-green.png)
+![Full pipeline, all stages green](./screenshots/Screenshot%202026-08-03%20162425.png)
 
 ## 6. SonarQube — Quality Gate passed
 
 Static analysis with 0 new issues, 0 accepted issues, 0% duplication.
 
-![SonarQube dashboard passed](./screenshots/07-sonarqube-passed.png)
+![SonarQube dashboard passed](./screenshots/Screenshot%202026-08-03%20162754.png)
 
 ## 7. ArgoCD — synced and healthy
 
@@ -80,13 +80,13 @@ ArgoCD detects the commit Jenkins pushed to `gitops-manifests`
 (`Update image tag to 35 [ci skip]`, authored by `jenkins-ci`) and
 auto-syncs the new image into the cluster.
 
-![ArgoCD synced and healthy](./screenshots/08-argocd-synced.png)
+![ArgoCD synced and healthy](./screenshots/Screenshot%202026-08-03%20162824.png)
 
 ## 8. The app, actually running
 
 Hitting the live `/health` endpoint through the NodePort service:
 
-![Live health endpoint response](./screenshots/09-live-response.png)
+![Live health endpoint response](./screenshots/Screenshot%202026-08-03%20162840.png)
 
 ```json
 {"status": "hello from jenkins shared pipeline"}
