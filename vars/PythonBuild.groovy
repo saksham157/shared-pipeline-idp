@@ -22,14 +22,22 @@ def call() {
                 }
             }
 
+            stage('Install Dependencies') {
+                steps {
+                    sh 'pip install -r requirements.txt'
+                }
+            }
+
             stage('Unit Test') {
                 steps {
+                    
+                    sh 'python3 -m pytest --junitxml=report.xml; echo $? > pytest_exit.txt'
                     script {
-                        try {
-                            sh 'python3 -m pytest || echo "No tests found, skipping"'
-                        } catch (Exception e) {
-                            echo "Unit tests failed: ${e.message}"
-                            currentBuild.result = 'UNSTABLE'
+                        def exitCode = readFile('pytest_exit.txt').trim()
+                        if (exitCode == '1') {
+                            error "Unit tests failed — check report.xml for details"
+                        } else if (exitCode == '5') {
+                            echo "No tests were collected — continuing, but check this is expected"
                         }
                     }
                 }
@@ -99,11 +107,36 @@ def call() {
                 }
             }
 
+            stage('Update Helm Values for ArgoCD') {
+                steps {
+                    script {
+                        try {
+                            withCredentials([usernamePassword(
+                                credentialsId: 'github-creds',
+                                usernameVariable: 'GIT_USER',
+                                passwordVariable: 'GIT_PASS'
+                            )]) {
+                                sh """
+                                    sed -i "s/tag: .*/tag: \\"${IMAGE_TAG}\\"/" helm-chart/values.yaml
+                                    git config user.email "jenkins@ci.local"
+                                    git config user.name "jenkins-ci"
+                                    git add helm-chart/values.yaml
+                                    git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]"
+                                    git push https://\$GIT_USER:\$GIT_PASS@github.com/saksham157/<your-repo>.git HEAD:main
+                                """
+                            }
+                        } catch (Exception e) {
+                            error "Failed to update Helm values for ArgoCD: ${e.message}"
+                        }
+                    }
+                }
+            }
+
         }
 
         post {
             success {
-                echo "Pipeline succeeded — image ${IMAGE_NAME}:${IMAGE_TAG} pushed."
+                echo "Pipeline succeeded — image ${IMAGE_NAME}:${IMAGE_TAG} pushed and Helm values updated."
             }
             unstable {
                 echo 'Pipeline finished but some checks were flagged — review logs.'
