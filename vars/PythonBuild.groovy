@@ -123,12 +123,15 @@ def call() {
                                 passwordVariable: 'GIT_PASS'
                             )]) {
                                 sh """
-                                    sed -i "s/tag: .*/tag: \\"${IMAGE_TAG}\\"/"python-app-code/values.yaml
+                                    rm -rf gitops-manifests
+                                    git clone https://\$GIT_USER:\$GIT_PASS@github.com/saksham157/gitops-manifests.git
+                                    cd gitops-manifests
+                                    sed -i 's/tag: .*/tag: "${IMAGE_TAG}"/' python-app-code/values.yaml
                                     git config user.email "jenkins@ci.local"
                                     git config user.name "jenkins-ci"
-                                    git add helm-chart/values.yaml
+                                    git add python-app-code/values.yaml
                                     git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]"
-                                    git push https://\$GIT_USER:\$GIT_PASS@github.com/saksham157/gitops-manifests.git HEAD:main
+                                    git push origin HEAD:main
                                 """
                             }
                         } catch (Exception e) {
