@@ -123,7 +123,7 @@ def call() {
                                 passwordVariable: 'GIT_PASS'
                             )]) {
                                 sh """
-                                    sed -i "s/tag: .*/tag: \\"${IMAGE_TAG}\\"/" python-app-code/values.yaml
+                                    sed -i "s/tag: .*/tag: \\"${IMAGE_TAG}\\"/"python-app-code/values.yaml
                                     git config user.email "jenkins@ci.local"
                                     git config user.name "jenkins-ci"
                                     git add helm-chart/values.yaml
