@@ -24,14 +24,20 @@ def call() {
 
             stage('Install Dependencies') {
                 steps {
-                    sh 'pip install -r requirements.txt'
+                    sh '''
+                        python3 -m venv venv
+                        . venv/bin/activate
+                        pip install -r requirements.txt
+                    '''
                 }
             }
 
             stage('Unit Test') {
                 steps {
-                    
-                    sh 'python3 -m pytest --junitxml=report.xml; echo $? > pytest_exit.txt'
+                    sh '''
+                        . venv/bin/activate
+                        python3 -m pytest --junitxml=report.xml; echo $? > pytest_exit.txt
+                    '''
                     script {
                         def exitCode = readFile('pytest_exit.txt').trim()
                         if (exitCode == '1') {
@@ -122,7 +128,7 @@ def call() {
                                     git config user.name "jenkins-ci"
                                     git add helm-chart/values.yaml
                                     git commit -m "Update image tag to ${IMAGE_TAG} [ci skip]"
-                                    git push https://\$GIT_USER:\$GIT_PASS@github.com/saksham157/<your-repo>.git HEAD:main
+                                    git push https://\$GIT_USER:\$GIT_PASS@github.com/saksham157/gitops-manifests.git HEAD:main
                                 """
                             }
                         } catch (Exception e) {
